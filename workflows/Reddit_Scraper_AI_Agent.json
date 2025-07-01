@@ -1,0 +1,408 @@
+{
+  "name": "Reddit Scraper AI Agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2cd0679f-717b-4725-a1a3-210a17ab5403",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "subreddit": "/n8n",
+        "limit": 30,
+        "filters": {
+          "category": "rising"
+        }
+      },
+      "type": "n8n-nodes-base.reddit",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "78e9d113-4da9-455d-a68d-eec49f3eeef6",
+      "name": "Reddit",
+      "credentials": {
+        "redditOAuth2Api": {
+          "id": "9fP68cPv2MOLQZVp",
+          "name": "Reddit account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "77cfc2b6-68a4-47f6-bb0a-436f10669bfe",
+              "leftValue": "={{ $json.ups }}",
+              "rightValue": 31,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "a77688a8-6bab-46ca-b0e0-e533d13bcf86",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        700,
+        120
+      ],
+      "id": "de542a6f-9ac8-45e3-8f61-6a61d543e047",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fs22yUGW0171Hmzp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        120
+      ],
+      "id": "3a40fa0e-ddea-4c95-8023-2f77c807ca2d",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "S6Y7pCwUKbhcWkkU",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a short summary of {{ $json.selftext }}\nWrite like you're briefing to a busy CEO. No explanations. Just the summary or other text. The summary should immediately tell what the post is about, the target market, the pain point of the user, and what kind of solution the user is looking for.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -100
+      ],
+      "id": "d624a64c-03dd-471e-a8b5-75f3a6ca9fb9",
+      "name": "Summary & Vibe"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Based on this output, tell me if the comment is worth replying to or not. {{ $json.output }} \nOnly output Yes or No\nNo explanations needed",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        -100
+      ],
+      "id": "42046518-ec1d-4368-a5a5-f28a3f7686a4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=draft a short but helpful message, replying to the comment: {{ $('Summary & Vibe').item.json.output }}\nOnly output the comment. No explainations needed. You have to write like a pro reddit user who is expert in AI & AI agents. Do not end with a fullstop. End with multiple fullstops. DO NOT use hashtags or emojis or emdashes",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1380,
+        -100
+      ],
+      "id": "2678f35f-c394-4777-9121-8d430c33f11c",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        120
+      ],
+      "id": "1209c354-f116-4909-8442-7fec1095a2ce",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "S6Y7pCwUKbhcWkkU",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appg7yIeDzSgj9FuU",
+          "mode": "list",
+          "cachedResultName": "Reddit Scraper",
+          "cachedResultUrl": "https://airtable.com/appg7yIeDzSgj9FuU"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwmwnej7BxpW90Z",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appg7yIeDzSgj9FuU/tblwmwnej7BxpW90Z"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Subreddit": "={{ $('Reddit').item.json.subreddit }}",
+            "Links": "={{ $('If').item.json.permalink }}",
+            "Summary": "={{ $('Summary & Vibe').item.json.output }}",
+            "PostID": "={{ $('If').item.json.id }}",
+            "Reply?": "={{ $('AI Agent').item.json.output }}",
+            "Comment": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Subreddit",
+              "displayName": "Subreddit",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Links",
+              "displayName": "Links",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "PostID",
+              "displayName": "PostID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reply?",
+              "displayName": "Reply?",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1740,
+        -100
+      ],
+      "id": "1ef8c998-2d25-4a53-a384-72d8c4372983",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "DSUlTrWN0P260qlN",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Reddit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reddit": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Summary & Vibe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary & Vibe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary & Vibe": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "55daac06-9dba-4e79-8774-c052aff06103",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "255cb48f774e077ce6b56611f37844accbcd9ddb3e8a414ad733165049951690"
+  },
+  "id": "VTRgjLP3Hc4UAMdX",
+  "tags": []
+}

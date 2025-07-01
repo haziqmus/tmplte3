@@ -1,0 +1,370 @@
+{
+  "createdAt": "2025-06-03T23:18:50.870Z",
+  "updatedAt": "2025-06-04T22:07:31.000Z",
+  "id": "GayT2MiHLX1ouiLA",
+  "name": "Scrape Google Maps for Leads",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        0
+      ],
+      "id": "acd558ff-2865-4b8e-a560-652e80a026d1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://api.outscraper.cloud/maps/search-v3",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.category }} {{ $json.location }}"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            },
+            {
+              "name": "async",
+              "value": "false"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "ZDVhMWE1MjE3NTQ0NDVmYWIwZTFjYjQ4OGM1ZjNiNzJ8YTQ0MzlhYzIyMQ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -180,
+        0
+      ],
+      "id": "c3bf8463-9dd9-4a1c-b077-f03a40536454",
+      "name": "Outscraper"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1xB29_qcR7NFIWIJngMpKvjBYICUC_z77i06vwFI6rZE",
+          "mode": "list",
+          "cachedResultName": "Leads To Scrape",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xB29_qcR7NFIWIJngMpKvjBYICUC_z77i06vwFI6rZE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xB29_qcR7NFIWIJngMpKvjBYICUC_z77i06vwFI6rZE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "ab3a751e-5cd6-4fb1-981f-f87f440008e5",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dFntNaEYJAOsYZIZ",
+          "name": "adamhaley@gmail Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data[0]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        40,
+        0
+      ],
+      "id": "7f1de0f9-6768-4c76-a324-b7a2b9201663",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e172538-efa3-4997-aad9-0c522cd607b7",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "790182be-f054-464f-bf08-0e67374e062e",
+              "name": "site",
+              "value": "={{ $json.site }}",
+              "type": "string"
+            },
+            {
+              "id": "0f573acd-c2fc-469d-ad13-441c5a6a4b09",
+              "name": "full_address",
+              "value": "={{ $json.full_address }}",
+              "type": "string"
+            },
+            {
+              "id": "7e04ba70-0506-43ef-9f22-6c55e809bf7f",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "edb48b22-8a72-4783-bdf0-5e9f628f91a5",
+              "name": "category",
+              "value": "={{ $json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "1de435de-4dd1-450e-ba57-e2c5b0a0b2a4",
+              "name": "subtypes",
+              "value": "={{ $json.subtypes }}",
+              "type": "string"
+            },
+            {
+              "id": "3a76063c-695c-4dea-846f-5c8573c16165",
+              "name": "logo",
+              "value": "={{ $json.logo }}",
+              "type": "string"
+            },
+            {
+              "id": "17945574-0387-4ac6-80ed-70f4d65f405a",
+              "name": "location_link",
+              "value": "={{ $json.location_link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        260,
+        0
+      ],
+      "id": "6c9c5698-18f7-4eb2-bd50-f248227ffb43",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcjeSRbgedK_TTTsHBbEH7biK2wxru5my9im_Fti3c4",
+          "mode": "list",
+          "cachedResultName": "Local Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcjeSRbgedK_TTTsHBbEH7biK2wxru5my9im_Fti3c4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AcjeSRbgedK_TTTsHBbEH7biK2wxru5my9im_Fti3c4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "site": "={{ $json.site }}",
+            "full_address": "={{ $json.full_address }}",
+            "phone": "=''{{ $json.phone }}",
+            "category": "={{ $json.category }}",
+            "subtypes": "={{ $json.subtypes }}",
+            "logo": "={{ $json.logo }}",
+            "location_link": "={{ $json.location_link }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "site",
+              "displayName": "site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_address",
+              "displayName": "full_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subtypes",
+              "displayName": "subtypes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "logo",
+              "displayName": "logo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location_link",
+              "displayName": "location_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        480,
+        0
+      ],
+      "id": "bd40b668-2ae4-42a2-a34b-7f965e1a2049",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dFntNaEYJAOsYZIZ",
+          "name": "adamhaley@gmail Google Sheets"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Outscraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outscraper": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "483caf80-c20d-44f6-8385-a01e073762c1",
+  "triggerCount": 0,
+  "tags": []
+}

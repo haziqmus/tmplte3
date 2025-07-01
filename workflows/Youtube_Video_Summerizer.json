@@ -1,0 +1,328 @@
+{
+  "name": "Youtube Video Summerizer",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        20
+      ],
+      "id": "1a397bb1-dbbb-47d1-90e3-1bf98ba1393a",
+      "name": "WhatsApp Trigger",
+      "webhookId": "53c97af2-e7c1-4335-b40f-7ab1db77377d",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "EOOewlAbNR4lXxlg",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractYoutubeId(url) {\n  const patterns = [\n    /(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([^&\\n?#]+)/,\n    /youtube\\.com\\/shorts\\/([^&\\n?#]+)/\n  ];\n\n  for (const pattern of patterns) {\n    const match = url.match(pattern);\n    if (match && match[1]) {\n      return match[1];\n    }\n  }\n\n  return null;\n}\n\n// Modified code\nconst message = $json.messages[0].text.body;\nconst urlRegex = /(https?:\\/\\/(?:www\\.)?(?:youtube\\.com|youtu\\.be)\\/\\S+)/;\nconst youtubeURL = message.match(urlRegex)[0];\n\nif (!youtubeURL) {\n  return { json: { error: 'No YouTube URL found' }};\n}\n\nconst videoId = extractYoutubeId(youtubeURL);\nreturn { json: { videoId }};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        20
+      ],
+      "id": "44f6b8ca-545b-4557-93c4-c6ff4a975cfb",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "https://www.searchapi.io/api/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "gwgYvbmyAjCx3NHHEKX2S5kE"
+            },
+            {
+              "name": "engine",
+              "value": "youtube_transcripts"
+            },
+            {
+              "name": "video_id",
+              "value": "={{ $json.videoId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        20
+      ],
+      "id": "7b108ede-b718-489a-81ad-c521319fea26",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "Working on it...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        760,
+        20
+      ],
+      "id": "5ce78408-7f5d-459c-83cb-8cd2e7652524",
+      "name": "WhatsApp Business Cloud",
+      "webhookId": "6d36dfb2-e562-4764-832c-61f80b9eaf05",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "ahGdiuJKpWwLozyZ",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        200
+      ],
+      "id": "e2efa988-fcc5-4bd7-8872-628a5e60df70",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "S6Y7pCwUKbhcWkkU",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize the following YouTube video transcript into a clear, concise summary that takes approximately 2 minutes to read. Focus on the key ideas, insights, and any actionable takeaways. Keep it structured and easy to understand.\n {{ JSON.stringify($('HTTP Request').item.json.transcripts[1]) }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        20
+      ],
+      "id": "91c2ecb4-c987-4adf-971f-90dcc426e5f6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        20
+      ],
+      "id": "fbb75966-d593-4fed-811b-a98cb1016421",
+      "name": "Output",
+      "webhookId": "6d36dfb2-e562-4764-832c-61f80b9eaf05",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "ahGdiuJKpWwLozyZ",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 1. WhatsApp Trigger\n-This listens to incoming WhatsApp messages.\n-It receives the YouTube URL.\n-Credentials must be added (via Meta Developer Portal).",
+        "height": 340,
+        "width": 260,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -140,
+        -200
+      ],
+      "typeVersion": 1,
+      "id": "4522368f-1c27-425f-88c7-c8f74cf5f55a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 2. Extract YouTube Video ID\n-A JavaScript code is used to extract the videoId from the URL.\n-Uses regular expressions (regex) to match valid YouTube formats.",
+        "height": 340,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        140,
+        -200
+      ],
+      "typeVersion": 1,
+      "id": "624b9582-5f52-4bad-93bb-f8dca2b4318c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## 3. Get Transcript \n-Uses Search API to get the transcript from the videoId.\n-Required parameters:\n   API key\n   Engine = YouTube transcript\n  Video ID\n-Done via an HTTP Request node in n8n.",
+        "height": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -200
+      ],
+      "id": "5a784413-f7b9-4611-b06b-0a58883ec133",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 4. Notify User: \"Working on it...\"\nSends an initial message to the user via WhatsApp.\nFormat:\nSend \"Working on it…\" message.\nUse recipient number from the trigger.\nSet up WhatsApp sender again with access token and business ID.",
+        "height": 340,
+        "width": 300,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -200
+      ],
+      "id": "f9decd5e-792c-4cbd-8414-b9d26fe5e364",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 6. Send Back Summary to User\n-The final node sends the AI-generated summary to the user via WhatsApp.\n-Uses the same recipient setup as before.\n-The content of the message is the summary.\n\n",
+        "height": 340,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        -200
+      ],
+      "id": "a9f97375-5f16-4414-bdde-936511d375eb",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 5. Summarize Transcript with Gemini\n-Add AI Agent node in n8n.\n-Choose gemini falsh 1.5",
+        "height": 340,
+        "width": 300,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        -200
+      ],
+      "id": "f2ed38f0-07d9-48a3-8231-db74643efc87",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Business Cloud": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5b586889-fabd-41c1-9c8c-54bfc8d5559a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "255cb48f774e077ce6b56611f37844accbcd9ddb3e8a414ad733165049951690"
+  },
+  "id": "y6mFFdJvnogyXjcN",
+  "tags": []
+}

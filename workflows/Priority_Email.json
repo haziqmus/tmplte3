@@ -1,0 +1,313 @@
+{
+  "createdAt": "2025-06-26T00:04:09.488Z",
+  "updatedAt": "2025-06-29T19:07:59.000Z",
+  "id": "R3Gkady4HoyiY8TF",
+  "name": "Priority Email",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Priority Email\n\nThis automation will recognize emails sent from a list of high priority contacts. It will LABEL the email INBOX, IMPORTANT, and UNREAD and trigger a notification through high visibility channels. This should insure I do not miss important emails!\n\n(yes there was an event that inspired this automation)\n",
+        "height": 240,
+        "width": 460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -260
+      ],
+      "id": "6336e603-7d92-4633-901a-171027184a8e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1h9EKXf7_F2mB7ERO2bzK23IDdqP4xyOQ9mZBk3TUzys",
+          "mode": "list",
+          "cachedResultName": "Priority Emails",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1h9EKXf7_F2mB7ERO2bzK23IDdqP4xyOQ9mZBk3TUzys/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1h9EKXf7_F2mB7ERO2bzK23IDdqP4xyOQ9mZBk3TUzys/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -100,
+        20
+      ],
+      "id": "bd253904-2a9a-43fa-b29a-f385e08b9693",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dFntNaEYJAOsYZIZ",
+          "name": "adamhaley@gmail Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e90636e6-9c01-4080-a564-fd1f9d7b5e90",
+              "leftValue": "={{ $('Code').item.json.senders }}",
+              "rightValue": "={{$json.From.match(/<(.*?)>/)[1] }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        20
+      ],
+      "id": "d4231018-e333-4fa4-84d7-24ac87c39af4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet senderArray = $input.all().reduce( (accumulator, currentObject) => {\n  accumulator.push( currentObject.json.sender ); // Extract the 'sender' attribute\n  return accumulator;\n}, []); // Initialize accumulator as an\n\nreturn {\n  senders: senderArray\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        20
+      ],
+      "id": "aac351ee-da77-4f71-8f0e-f049cf397f04",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        780,
+        120
+      ],
+      "id": "f5991012-3a6d-44e7-8538-fe0f0241563e",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U08FYSN38KT",
+          "mode": "list",
+          "cachedResultName": "adamhaley"
+        },
+        "text": "=Priority Email Received! From: {{$('Gmail').item.json.From  }} Subject: {{ $('Gmail').item.json.Subject }} \nSnippet: {{ $('Gmail').item.json.snippet }}...",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1000,
+        -80
+      ],
+      "id": "30403832-ab88-4da6-be62-674c773bb56f",
+      "name": "Slack",
+      "webhookId": "93323417-79a3-4df2-924a-2a5f1bea97c8",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "aku9PHR5ccUxQYCi",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        20
+      ],
+      "id": "42a070c1-591f-4c05-b839-1f14674ada5c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "receivedAfter": "={{  $now.minus(1,'hours') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        20
+      ],
+      "id": "7c7df46d-2390-4a8d-90d1-322ab4600851",
+      "name": "Gmail",
+      "webhookId": "c14cea22-4642-46f0-9dbe-5ee238f9871d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "IMPORTANT",
+          "INBOX",
+          "STARRED",
+          "UNREAD"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        780,
+        -80
+      ],
+      "id": "5e5c43df-2ae4-46b2-969c-a30112c4c450",
+      "name": "Gmail1",
+      "webhookId": "84320d27-3945-4f30-b2ff-46c9b18879b3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack": {
+      "main": [
+        []
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "23cad646-015c-415d-b2bf-200e44d78062",
+  "triggerCount": 1,
+  "tags": []
+}

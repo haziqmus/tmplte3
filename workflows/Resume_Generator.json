@@ -1,0 +1,211 @@
+{
+  "createdAt": "2025-04-25T17:52:35.238Z",
+  "updatedAt": "2025-06-17T00:18:26.000Z",
+  "id": "Q1HVkL2oehj9cSlc",
+  "name": "Resume Generator",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8",
+          "mode": "list",
+          "cachedResultName": "Resume SOURCE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1590795213,
+          "mode": "list",
+          "cachedResultName": "Work History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8/edit#gid=1590795213"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -700,
+        -200
+      ],
+      "id": "6ff899aa-cc28-4bc8-a6b8-f5c5fcaac598",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XEt20yHVtBArkULc",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "adamhaley",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "adamhaley-com",
+          "mode": "list",
+          "cachedResultName": "adamhaley-com",
+          "cachedResultUrl": "https://github.com/adamhaley/adamhaley-com"
+        },
+        "filePath": "data/resume.json",
+        "fileContent": "={{ JSON.stringify( $json.data, '', 2 ) }}",
+        "commitMessage": "=updates to resume.json {{ $now }}",
+        "additionalParameters": {
+          "branch": {
+            "branch": "master"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -200
+      ],
+      "id": "b076bbf1-c9b2-441e-9e9a-0c70282a4fa9",
+      "name": "GitHub",
+      "webhookId": "022ea827-7246-48ae-a0e9-947fbcab7be5",
+      "credentials": {
+        "githubApi": {
+          "id": "Jvt1VN8GL1z1M8pS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -200
+      ],
+      "id": "093ae441-2cdc-4cf0-bdb2-19087f4cc0e4",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8",
+          "mode": "list",
+          "cachedResultName": "Resume SOURCE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1590795213,
+          "mode": "list",
+          "cachedResultName": "Work History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8/edit#gid=1590795213"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        -100
+      ],
+      "id": "f15fd056-9baf-4179-b439-c7e2ed9a94ad",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "sQ5tgNUU4rrOP3uy",
+          "name": "adam@adamhaley.com Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -920,
+        -300
+      ],
+      "id": "263f73a6-823d-4800-86d5-e2c712b097a4",
+      "name": "When clicking ‘Test workflow’"
+    }
+  ],
+  "connections": {
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8",
+      "sheetId": 1590795213,
+      "lastRevision": 192,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=1omzLm4dho_9UMKGma_wffrb-rSFlR58GAwbkohZxHu8&revision=192&exportFormat=xlsx"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "641719eb-bcf4-4b66-92bd-96ab578e6f04",
+  "triggerCount": 1,
+  "tags": []
+}

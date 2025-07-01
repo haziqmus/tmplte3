@@ -1,0 +1,138 @@
+{
+  "createdAt": "2025-06-04T21:34:24.632Z",
+  "updatedAt": "2025-06-25T02:12:32.000Z",
+  "id": "DpPS6gsJmukmx0qm",
+  "name": "SIRI Chat Agent",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1dc2b4c3-b69d-4d60-bb49-1c2327f43f24",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "67de8a51-2369-4936-bb09-0d048bc6a9ae",
+      "name": "Webhook",
+      "webhookId": "1dc2b4c3-b69d-4d60-bb49-1c2327f43f24"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        440,
+        0
+      ],
+      "id": "b2df618e-17e7-410e-aaf1-14543cd43898",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "G0Vk5kYZGi0nCI12",
+          "mode": "list",
+          "cachedResultName": "BOT CORE"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sessionId": 0,
+            "msg": "={{ $json.body.input }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "msg",
+              "displayName": "msg",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "sessionId",
+              "displayName": "sessionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3cce3ebe-a16a-467e-a92a-1f0e025746af",
+      "name": "BOT CORE"
+    },
+    {
+      "parameters": {
+        "content": "## SIRI AI Agent Wrapper",
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        -240
+      ],
+      "id": "66c71189-b175-4bde-adef-bd39ee085ee4",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "BOT CORE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BOT CORE": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "cfcfd980-6e94-464c-bf16-26b35b1530e4",
+  "triggerCount": 1,
+  "tags": []
+}

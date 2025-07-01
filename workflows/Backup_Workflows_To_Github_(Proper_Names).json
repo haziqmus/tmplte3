@@ -1,0 +1,423 @@
+{
+  "createdAt": "2025-06-01T03:39:11.805Z",
+  "updatedAt": "2025-06-26T20:23:49.000Z",
+  "id": "90aE9VfgouGkDwgi",
+  "name": "Backup Workflows To Github (Proper Names)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1235fed-ae2f-4520-9158-2cf406bb2586",
+              "leftValue": "={{ $('List Workflow Files on Github').all().map(item => item.json.name) }}",
+              "rightValue": "={{ $json.name }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -660,
+        160
+      ],
+      "id": "47e9b7a7-50a8-4c96-b0c6-6665dab721f2",
+      "name": "If File Exists"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        60
+      ],
+      "id": "fcf4b8dc-6b84-42c2-8dc7-037edfd88273",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1540,
+        160
+      ],
+      "id": "7e7a6f8c-ef3a-45bd-9d8f-e152149e3d3a",
+      "name": "Run Daily"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "adamhaley",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://github.com/adamhaley/n8n"
+        },
+        "filePath": "workflows"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -1320,
+        160
+      ],
+      "id": "1083b86d-442d-4a30-9ff9-d132ecee33b3",
+      "name": "List Workflow Files on Github",
+      "executeOnce": true,
+      "webhookId": "ef7828ec-cf4d-42a9-b12f-5c088cf829ec",
+      "credentials": {
+        "githubApi": {
+          "id": "Jvt1VN8GL1z1M8pS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet name =  $json.name.replace(/ /g,'_');\nname = name.replace('/','') + '.json';\nreturn { name: name }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        160
+      ],
+      "id": "48297519-1180-4cd2-8c55-76bfdb367cbc",
+      "name": "Proper filename from Workflow",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "adamhaley",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://github.com/adamhaley/n8n"
+        },
+        "filePath": "=workflows/{{ $json.name }}",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        60
+      ],
+      "id": "a02616b2-e821-49ca-9dbf-a1fc6500e0a0",
+      "name": "Get The File",
+      "executeOnce": false,
+      "webhookId": "c6bcc826-6787-45c1-a756-6aedb5fd81b7",
+      "credentials": {
+        "githubApi": {
+          "id": "Jvt1VN8GL1z1M8pS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "returnAll": false,
+        "filters": {
+          "activeWorkflows": true,
+          "tags": ""
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        160
+      ],
+      "id": "81c6f055-5983-476a-8c0c-00def6ad1075",
+      "name": "n8n Get Active Workflows",
+      "executeOnce": true,
+      "credentials": {
+        "n8nApi": {
+          "id": "v9vxnDOn8eyJwvsI",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c9576a13-befb-4a51-85e2-7ee04cb3664f",
+              "leftValue": "={{ JSON.stringify( $('Extract from File').item.json.data, null, 2 ) }}",
+              "rightValue": "={{ JSON.stringify( $('n8n Get Active Workflows').item.json, null, 2 ) }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        60
+      ],
+      "id": "d505afcd-faf8-42a8-9693-b3746dab7c3e",
+      "name": "if n8n Workflow has Updates"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "adamhaley",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://github.com/adamhaley/n8n"
+        },
+        "filePath": "=workflows/{{ $('Proper filename from Workflow').item.json.name, null, 2 }}",
+        "fileContent": "={{ JSON.stringify( $('n8n Get Active Workflows').first().json ) }}",
+        "commitMessage": "=creating backup file for workflow \"{{ $('n8n Get Active Workflows').first().json.name }}\"\"",
+        "additionalParameters": {
+          "branch": {
+            "branch": "main"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        260
+      ],
+      "id": "67644118-0954-45a2-9d5f-f5239e338084",
+      "name": "Create File on Github",
+      "webhookId": "23889cba-d3e7-4dd0-ab91-4b262d0112f1",
+      "credentials": {
+        "githubApi": {
+          "id": "Jvt1VN8GL1z1M8pS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "adamhaley",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://github.com/adamhaley/n8n"
+        },
+        "filePath": "=workflows/{{ $('Get The File').item.json.name }}",
+        "fileContent": "={{ JSON.stringify( $('n8n Get Active Workflows').item.json, null, 2 ) }}",
+        "commitMessage": "=Updating n8n workflow \"{{ $('n8n Get Active Workflows').item.json.name }}\""
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -40
+      ],
+      "id": "985273cf-0d79-424e-bfd1-d0c91020cc58",
+      "name": "Update File on GIthub",
+      "webhookId": "f6489b4e-6185-449d-b876-e17fd2afbbd1",
+      "credentials": {
+        "githubApi": {
+          "id": "Jvt1VN8GL1z1M8pS",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        220,
+        160
+      ],
+      "id": "22887938-79b4-4dc7-a760-7984e2a2c2db",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "connections": {
+    "If File Exists": {
+      "main": [
+        [
+          {
+            "node": "Get The File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create File on Github",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "if n8n Workflow has Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Daily": {
+      "main": [
+        [
+          {
+            "node": "List Workflow Files on Github",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Workflow Files on Github": {
+      "main": [
+        [
+          {
+            "node": "n8n Get Active Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proper filename from Workflow": {
+      "main": [
+        [
+          {
+            "node": "If File Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get The File": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n Get Active Workflows": {
+      "main": [
+        [
+          {
+            "node": "Proper filename from Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if n8n Workflow has Updates": {
+      "main": [
+        [
+          {
+            "node": "Update File on GIthub",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Run Daily": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "e530876e-a0d6-4284-8fec-ff7bf171d74d",
+  "triggerCount": 1,
+  "tags": []
+}

@@ -1,0 +1,382 @@
+{
+  "createdAt": "2025-05-11T19:19:19.275Z",
+  "updatedAt": "2025-06-02T01:09:42.000Z",
+  "id": "aOXmAxM5FDNzAj98",
+  "name": "Categorize Gmail On Arrival",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        160
+      ],
+      "id": "f6401e93-3bea-49df-81a5-f04cefe77370",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.headers.subject }}{{$json.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Spammy",
+              "description": "Emails from people or companies with the intent to sell a product or service, is a mass email and doesnt apply to me directly"
+            },
+            {
+              "category": "Personal",
+              "description": "Personal email from family or friends"
+            },
+            {
+              "category": "Recruitment",
+              "description": "Job offers or requests for resumes, interviews or intro calls"
+            },
+            {
+              "category": "Misc",
+              "description": "miscellaneous emails that don't fit the other options"
+            },
+            {
+              "category": "Social",
+              "description": "Any email from a social media site - instagram, facebook, youtube, X, meetup.com, livejournal, or LinkedIn"
+            },
+            {
+              "category": "Transactional",
+              "description": "Receipts or Invoices"
+            },
+            {
+              "category": "Reddit",
+              "description": "Reddit emails or tab watchers from reddit"
+            }
+          ]
+        },
+        "options": {
+          "multiClass": false,
+          "systemPromptTemplate": "Please classify the text provided by the user into one of the following categories: {categories}, and use the provided formatting instructions below. Don't explain, and only output the json."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        160
+      ],
+      "id": "f70fef52-1293-4920-a596-1551596b7270",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_756443160637827591"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        660
+      ],
+      "id": "7acb9d74-34df-4bac-9826-0f701a0705b0",
+      "name": "Gmail",
+      "webhookId": "e2c61e3e-2e83-460f-a45e-957e4530784a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "CATEGORY_SOCIAL"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        260
+      ],
+      "id": "78b56b0b-7532-40f0-9999-fe0f0ac43817",
+      "name": "Gmail2",
+      "webhookId": "20d7a267-f2a8-4e94-820a-04147bef9e38",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "CATEGORY_PERSONAL"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        -140
+      ],
+      "id": "623c2e8f-d550-452b-91dd-5ded0202e403",
+      "name": "Gmail3",
+      "webhookId": "ef756d4a-5cd9-4c79-b80e-ecdcb1501253",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "CATEGORY_PROMOTIONS",
+          "SPAM"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        -340
+      ],
+      "id": "0786bf6e-4e6f-4eac-8fb0-30529535332e",
+      "name": "Gmail4",
+      "webhookId": "10405ac6-76fc-4b10-a465-0272d1f88b19",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        60
+      ],
+      "id": "f134401a-e2f3-44ad-b10a-3ea35d861dc0",
+      "name": "Gmail5",
+      "webhookId": "9d17b717-c8e6-4dd9-bb37-98b916f0c5b8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -260,
+        160
+      ],
+      "id": "9bfc888b-793c-4da6-8895-0fe40f35b8a9",
+      "name": "Gmail6",
+      "webhookId": "ce37e66a-fe39-4919-b7ce-9e0f203fe1e7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_1207247273045055523"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        460
+      ],
+      "id": "e3459969-c255-49ed-83e7-ae0cc22b2127",
+      "name": "Gmail1",
+      "webhookId": "c664bd39-cab1-4f96-83b5-bc36f5807b26",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KbRFiyeEGlFxZvYT",
+          "name": "adamhaley@gmail.com account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-3-7-sonnet-20250219",
+          "cachedResultName": "Claude 3.7 Sonnet"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        60,
+        380
+      ],
+      "id": "2c87c7d3-7123-4873-a872-58f9cf7372ec",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "RpSgqhlCVqkttICM",
+          "name": "Anthropic account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Gmail4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Gmail2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail6": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Gmail Trigger": {
+      "Gmail Trigger": {
+        "lastTimeChecked": 1748825977,
+        "possibleDuplicates": [
+          "1972e26b69af6565",
+          "1972e2103e448f11",
+          "1972e20fd1372123"
+        ]
+      }
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "cb5f6b70-bbf2-4b23-b5bc-ccd97259506c",
+  "triggerCount": 1,
+  "tags": []
+}

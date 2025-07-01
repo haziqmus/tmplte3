@@ -1,0 +1,361 @@
+{
+  "createdAt": "2025-05-18T19:59:00.319Z",
+  "updatedAt": "2025-06-23T23:16:14.000Z",
+  "id": "X1V3UPGUPaa2TOki",
+  "name": "Summarize GIT Log for Client Email",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        100
+      ],
+      "id": "b6bc1083-1970-48f8-a317-d5576cd6fbdb",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/adamhaley/adamhaley-com/commits",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=since",
+              "value": "={{ $now.minus(7,'days') }}"
+            },
+            {
+              "name": "sha",
+              "value": "master"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        100
+      ],
+      "id": "a25d5cf5-5505-4448-bf23-39e3478e06c8",
+      "name": "Get Commit History"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "commit.message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "a662ac7c-1b75-4fa0-94c8-6c110ccdbc19",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        968,
+        220
+      ],
+      "id": "8bc8c1e1-b73d-4cf4-a6e4-67e128d5ab2f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5GRgzlcJ5Ujkvgcd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ddecfe50-8886-41a2-8f46-f5028e678f7c",
+              "leftValue": "={{ $json.commit }}",
+              "rightValue": "=exists",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        100
+      ],
+      "id": "3882bd17-645f-4a93-b3ca-e3c199e182f4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fromEmail": "info@ahmedia.ai",
+        "toEmail": "adamhaley@gmail.com",
+        "subject": "=Updates to AdamHaley.com!",
+        "emailFormat": "text",
+        "text": "=Hi Adam,\n\nI wanted to keep you in the loop on your latest site updates from your team at AHMedia this week! \n\n{{ $json.response.text }}\n\nAs always, feel free to reach out if you have any questions!\n\nSincerely,\n\nAHMedia BOT",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1260,
+        0
+      ],
+      "id": "83d7693a-7101-415b-aec3-4d5fcac3ea79",
+      "name": "Send Email",
+      "webhookId": "b0531836-b85c-4286-8a07-89b218841bb6",
+      "credentials": {
+        "smtp": {
+          "id": "184zfe9H1Rf34NpO",
+          "name": "AHMedia SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "Your summary will start with \"Updates include\"\nWrite a concise summary of the following:\n\n\n\"{text}\"\n\n\nCONCISE SUMMARY:"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "213fd304-79d0-4c80-a625-8a1e633b4013",
+      "name": "Summarize Git Log"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ],
+      "id": "0670114a-d985-4878-b0e7-364e33edb9c0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "content": "# AdamHaley.COM Summarize GIT Commit History for client email\n\nThis workflow looks at the git history of a public github repository. If there are any commits in the last 7 days, commit messages are summarized into a friendly client email and sent to the client.\n",
+        "height": 240,
+        "width": 420,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -460
+      ],
+      "id": "5d97926c-6dff-48bd-a98f-b9c41a3645d5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Every Week, load the past weeks commit history ",
+        "height": 540,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -120
+      ],
+      "id": "0c3e2e67-1d27-4d39-a567-5342499fadcd",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## If there are commits, aggregate for AI processing\n",
+        "height": 540,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -120
+      ],
+      "id": "4b1b6236-a246-4019-baf8-c5a1381e13c5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Summarize commit history messages into friendly client email\n",
+        "height": 540,
+        "width": 340,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        860,
+        -120
+      ],
+      "id": "01d15945-1f7d-4e2a-84e6-032dbe18bf69",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Send client email",
+        "height": 540,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        -120
+      ],
+      "id": "be2ac454-f0e8-41bd-ad17-b0544a05c5f8",
+      "name": "Sticky Note4"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Commit History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Commit History": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Summarize Git Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Git Log",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Git Log": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        180
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "6ecf2a0a-6631-4519-802b-a82c8a7f2285",
+  "triggerCount": 1,
+  "tags": []
+}

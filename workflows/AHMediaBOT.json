@@ -1,0 +1,623 @@
+{
+  "createdAt": "2025-04-22T17:59:05.709Z",
+  "updatedAt": "2025-06-03T03:15:14.000Z",
+  "id": "G0Vk5kYZGi0nCI12",
+  "name": "AHMediaBOT",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.msg }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant. You are friendly and eager to connect. do not use emoji characters in your output. Your responses are conversational but only  a few sentences or a paragraph max length. For tool calls requiring location data, use Los Angeles unless otherwise specified."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -28,
+        -220
+      ],
+      "id": "939c92a6-c15e-4649-abdd-669d3faa6754",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ahmedia.ai:8000/transcribe",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -680,
+        -320
+      ],
+      "id": "3ee226a1-8fcb-43c3-882f-8a5e1de5922b",
+      "name": "Transcribe Voice"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ahmedia.ai:8000/tts",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -220
+      ],
+      "id": "181f7453-b8e0-4e89-a9c4-eb73fd475dd4",
+      "name": "Cartesia TTS"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -900,
+        -320
+      ],
+      "id": "1db68457-d043-43ad-b876-a7ee3b166640",
+      "name": "Download Message",
+      "webhookId": "d6239fda-b394-43c7-87b8-889f340989e6",
+      "credentials": {
+        "telegramApi": {
+          "id": "Up0ePNUE4mWLrzEL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8743551c-0890-4d1a-9791-dd1d4087849d",
+              "name": "msg",
+              "value": "={{ $json.msg }}",
+              "type": "string"
+            },
+            {
+              "id": "caf017c7-8d7d-4aa5-ab7f-8e3eb27a8ec9",
+              "name": "sessionId",
+              "value": "={{ $('Is Voice or Text?').item.json.message.chat.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -460,
+        -220
+      ],
+      "id": "863aea4c-1ed7-46a6-b9b8-4c900b258d0f",
+      "name": "Add sessionId"
+    },
+    {
+      "parameters": {
+        "keys": {
+          "key": [
+            {
+              "currentKey": "message.text",
+              "newKey": "msg"
+            }
+          ]
+        },
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-base.renameKeys",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        -120
+      ],
+      "id": "b80de887-b541-4ef3-9475-af76f4d121fc",
+      "name": "Normalize Msg"
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Receive Message').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "reply.mp3"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        780,
+        -220
+      ],
+      "id": "f8d0b3f3-3810-4a6e-8bdb-b3d1be3d35c5",
+      "name": "Send Audio Reply",
+      "webhookId": "660355ff-7f58-4b7a-b966-21497023ff9d",
+      "credentials": {
+        "telegramApi": {
+          "id": "Up0ePNUE4mWLrzEL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Receive Message').item.json.message.chat.id }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        -220
+      ],
+      "id": "51cb39ad-a38d-4870-836e-16f9daa2a4a2",
+      "name": "Send Text Reply",
+      "webhookId": "531a0f31-0dd2-4cfa-80cc-0ac6e12e595d",
+      "credentials": {
+        "telegramApi": {
+          "id": "Up0ePNUE4mWLrzEL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "a8116d0d-5bdb-49da-8984-08a077e816ae"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cb242f13-0ce2-4645-9a69-6d9816104485",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1120,
+        -220
+      ],
+      "id": "2f6d91ba-a3d3-4f12-94c3-9fda6e5a7b1f",
+      "name": "Is Voice or Text?"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1340,
+        -220
+      ],
+      "id": "4c73364b-56eb-48e5-8e27-ad426d71e0bb",
+      "name": "Receive Message",
+      "webhookId": "aac89fdd-865b-4f9b-9875-75909cc27924",
+      "credentials": {
+        "telegramApi": {
+          "id": "Up0ePNUE4mWLrzEL",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to record a \"content idea\" ",
+        "workflowId": {
+          "__rl": true,
+          "value": "uHh2zhO8z0QbHbow",
+          "mode": "list",
+          "cachedResultName": "Record Content Idea"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('content', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "content"
+          ],
+          "schema": [
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fd305077-826a-4545-af15-c95dbb2c47c6",
+      "name": "Record Content Idea"
+    },
+    {
+      "parameters": {
+        "format": "imperial",
+        "cityName": "Los Angeles, CA",
+        "language": "=en"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        120,
+        0
+      ],
+      "id": "ed29c503-5341-4826-bfe8-6897983a49c3",
+      "name": "Weather",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "7DhsapvM6ZDKxoUN",
+          "name": "OPEN WEATHER API KEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "5DayForecast",
+        "format": "imperial",
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "ef3a7dd9-4200-4dd5-9753-f11a67d1709c",
+      "name": "Forecast",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "7DhsapvM6ZDKxoUN",
+          "name": "OPEN WEATHER API KEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "journal_entry",
+        "description": "Call this tool to write a journal entry.",
+        "workflowId": {
+          "__rl": true,
+          "value": "H0HZQnMr1hgjQMmI",
+          "mode": "list",
+          "cachedResultName": "Journal Entry"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('content', `This should be the contents of the journal entry sent by the transcribe node`, 'string') }}"
+          },
+          "matchingColumns": [
+            "content"
+          ],
+          "schema": [
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        360,
+        0
+      ],
+      "id": "1ffc5b75-8a7c-448f-94ce-a9a8e3babf5d",
+      "name": "Journal Entry",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "ah_media_bot"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -120,
+        0
+      ],
+      "id": "c470ae27-ab74-4406-bf1c-c1e42be858f0",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "PAxrnIdpjZ24fsIc",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "870ef1fc-10f5-43f1-9955-0f159dd052ba",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ulwRJnMKLZ1UXHig",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Cartesia TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice": {
+      "main": [
+        [
+          {
+            "node": "Add sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cartesia TTS": {
+      "main": [
+        [
+          {
+            "node": "Send Audio Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Message": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add sessionId": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Msg": {
+      "main": [
+        [
+          {
+            "node": "Add sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Audio Reply": {
+      "main": [
+        [
+          {
+            "node": "Send Text Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Voice or Text?": {
+      "main": [
+        [
+          {
+            "node": "Download Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Message": {
+      "main": [
+        [
+          {
+            "node": "Is Voice or Text?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Content Idea": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forecast": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journal Entry": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "8993251d-deba-427f-a17c-186ccd08e767",
+  "triggerCount": 1,
+  "tags": []
+}
